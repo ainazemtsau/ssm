@@ -1,0 +1,32 @@
+package com.pplflw.employee.statemachine.action;
+
+import com.pplflw.employee.dto.EmployeeUpdateDto;
+import com.pplflw.employee.model.Employee;
+import com.pplflw.employee.model.EmployeeEvent;
+import com.pplflw.employee.model.EmployeeState;
+import com.pplflw.employee.service.EmployeeService;
+import com.pplflw.employee.statemachine.utils.StateMachineUtils;
+import org.springframework.statemachine.StateContext;
+import org.springframework.statemachine.action.Action;
+
+public class UpdateEmployeeStateAction implements Action<EmployeeState, EmployeeEvent> {
+
+    private final EmployeeService employeeService;
+
+    private final StateMachineUtils utils;
+
+    public UpdateEmployeeStateAction(EmployeeService employeeService, StateMachineUtils utils) {
+        this.employeeService = employeeService;
+        this.utils = utils;
+    }
+
+    @Override
+    public void execute(StateContext<EmployeeState, EmployeeEvent> stateContext) {
+        EmployeeUpdateDto updateMetaInfo = utils.getUpdateMetaInfo(stateContext.getStateMachine());
+        Employee employee = employeeService.getEmployeeById(updateMetaInfo.getEmployeeId()).get();
+        employee.setState(utils.getTargetState(stateContext));
+        employeeService.addNewEmployee(employee);
+        utils.putEmployee(stateContext.getStateMachine(), employee);
+    }
+
+}

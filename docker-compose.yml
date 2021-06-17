@@ -1,0 +1,36 @@
+version: '3'
+volumes:
+  mongodata:
+services:
+  employee-service:
+    build: .
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/
+      - SPRING_DATA_MONGODB_DATABASE=employee
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5008,server=y,suspend=n
+    ports:
+      - 8080:8080
+      - "5008:5008"
+    depends_on:
+      - mongodb
+  mongodb:
+    image: mongo
+    container_name: mongo
+    volumes:
+      - mongodata:/data/db
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_DATABASE: employee
+
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
+    ports:
+      - 6379:6379
